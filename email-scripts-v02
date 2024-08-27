@@ -1,0 +1,68 @@
+import email, smtplib, ssl
+
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+##load.env() import password
+
+subject = "Introduction with Pedro"
+sender_email = "vincentypedro@gmail.com"
+receiver_email = "pvincenty@fordham.edu"
+#password = input("Type your password and press enter:")
+password = password
+# Create a multipart message and set headers
+message = MIMEMultipart()
+message["From"] = "Pedro Vincenty"
+message["To"] = receiver_email
+message["Subject"] = subject
+#message["Bcc"] = receiver_email  # Recommended for mass emails
+##################################################################
+file = '/Users/Pedro/Desktop/Job Ish/rando_ro'
+userName = 'Pedro Vincenty'
+name = userName.index(' ')
+firstName = userName[:name]
+company = 'Lululemon' +'?'
+
+f = open(file,'r')
+filedata = f.read()
+f.close()
+#
+char_to_replace = {'prospect': 'Michael', 'userName': userName, 'xyzCompany?': company,'userFirstName':firstName,'sentimentRole':'sql developers'}
+
+# Iterate over all key-value pairs in dictionary 
+for key, value in char_to_replace.items():
+    # Replace key character with value character in string
+    filedata = filedata.replace(key, value)
+####################################################################
+# Add body to email
+message.attach(MIMEText(filedata, "plain"))
+
+filename = "Pedro_Vincenty_resume.pdf"  # In same directory as script
+
+# Open PDF file in binary mode
+with open(filename, "rb") as attachment:
+    # Add file as application/octet-stream
+    # Email client can usually download this automatically as attachment
+    part = MIMEBase("application", "octet-stream")
+    part.set_payload(attachment.read())
+
+# Encode file in ASCII characters to send by email    
+encoders.encode_base64(part)
+
+# Add header as key/value pair to attachment part
+part.add_header(
+    "Content-Disposition",
+    f"attachment; filename= {filename}",
+)
+
+# Add attachment to message and convert message to string
+message.attach(part)
+text = message.as_string()
+
+# Log in to server using secure context and send email
+context = ssl.create_default_context()
+with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+    server.login(sender_email, password)
+    server.sendmail(sender_email, receiver_email, text)
